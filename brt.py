@@ -1,3 +1,4 @@
+"""Iterate over every combination of hyperparameters."""
 import logging
 from network import Network
 from tqdm import tqdm
@@ -11,6 +12,12 @@ logging.basicConfig(
 )
 
 def train_networks(networks, dataset):
+    """Train each network.
+
+    Args:
+        networks (list): Current population of networks
+        dataset (str): Dataset to use for training/evaluating
+    """
     pbar = tqdm(total=len(networks))
     for network in networks:
         network.train(dataset)
@@ -25,12 +32,26 @@ def train_networks(networks, dataset):
     print_networks(networks[:5])
 
 def print_networks(networks):
+    """Print a list of networks.
+
+    Args:
+        networks (list): The population of networks
+
+    """
     logging.info('-'*80)
     for network in networks:
         network.print_network()
 
 def generate_network_list(nn_param_choices):
+    """Generate a list of all possible networks.
 
+    Args:
+        nn_param_choices (dict): The parameter choices
+
+    Returns:
+        networks (list): A list of network objects
+
+    """
     networks = []
 
     # This is silly.
@@ -56,6 +77,7 @@ def generate_network_list(nn_param_choices):
     return networks
 
 def main():
+    """Brute force test every network."""
     dataset = 'cifar10'
 
     nn_param_choices = {
@@ -65,6 +87,8 @@ def main():
         'optimizer': ['rmsprop', 'adam', 'sgd', 'adagrad',
                       'adadelta', 'adamax', 'nadam'],
     }
+
+    logging.info("***Brute forcing networks***")
 
     networks = generate_network_list(nn_param_choices)
 

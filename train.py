@@ -1,4 +1,6 @@
-
+"""
+Utility used by the Network class to actually train.
+"""
 from keras.datasets import mnist, cifar10
 from keras.models import Sequential
 from keras.layers import Dense, Dropout
@@ -9,6 +11,7 @@ from keras.callbacks import EarlyStopping
 early_stopper = EarlyStopping(patience=5)
 
 def get_cifar10():
+    """Retrieve the CIFAR dataset and process the data."""
     # Set defaults.
     nb_classes = 10
     batch_size = 64
@@ -30,6 +33,7 @@ def get_cifar10():
     return (nb_classes, batch_size, input_shape, x_train, x_test, y_train, y_test)
 
 def get_mnist():
+    """Retrieve the MNIST dataset and process the data."""
     # Set defaults.
     nb_classes = 10
     batch_size = 128
@@ -44,12 +48,23 @@ def get_mnist():
     x_train /= 255
     x_test /= 255
 
+    # convert class vectors to binary class matrices
     y_train = to_categorical(y_train, nb_classes)
     y_test = to_categorical(y_test, nb_classes)
 
     return (nb_classes, batch_size, input_shape, x_train, x_test, y_train, y_test)
 
 def compile_model(network, nb_classes, input_shape):
+    """Compile a sequential model.
+
+    Args:
+        network (dict): the parameters of the network
+
+    Returns:
+        a compiled network.
+
+    """
+    # Get our network parameters.
     nb_layers = network['nb_layers']
     nb_neurons = network['nb_neurons']
     activation = network['activation']
@@ -57,8 +72,10 @@ def compile_model(network, nb_classes, input_shape):
 
     model = Sequential()
 
+    # Add each layer.
     for i in range(nb_layers):
 
+        # Need input shape for first layer.
         if i == 0:
             model.add(Dense(nb_neurons, activation=activation, input_shape=input_shape))
         else:
@@ -75,6 +92,13 @@ def compile_model(network, nb_classes, input_shape):
     return model
 
 def train_and_score(network, dataset):
+    """Train the model, return test loss.
+
+    Args:
+        network (dict): the parameters of the network
+        dataset (str): Dataset to use for training/evaluating
+
+    """
     if dataset == 'cifar10':
         nb_classes, batch_size, input_shape, x_train, \
             x_test, y_train, y_test = get_cifar10()
@@ -86,11 +110,11 @@ def train_and_score(network, dataset):
 
     model.fit(x_train, y_train,
               batch_size=batch_size,
-              epochs=10000,
+              epochs=10000,  # using early stopping, so no real limit
               verbose=0,
               validation_data=(x_test, y_test),
               callbacks=[early_stopper])
 
     score = model.evaluate(x_test, y_test, verbose=0)
 
-    return score[1]
+    return score[1]  # 1 is accuracy. 0 is loss.
